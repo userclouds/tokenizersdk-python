@@ -44,10 +44,19 @@ def test_access_policies(c: Client):
         print("failed to update access policy: ", e)
 
     try:
-        if not c.DeleteAccessPolicy(update.id):
+        if not c.DeleteAccessPolicy(update.id, update.version):
             print("failed to delete access policy but no error?")
     except Error as e:
         print("failed to delete access policy: ", e)
+
+    try:
+        aps = c.ListAccessPolicies()
+        for ap in aps:
+            if ap.id == update.id:
+                if ap.version != 0:
+                    print(f"got access policy with version {ap.version}, expected 0")
+    except Error as e:
+        print("failed to get access policy: ", e)
 
 
 def test_generation_policies(c: Client):

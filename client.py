@@ -98,8 +98,12 @@ class Client:
         return AccessPolicy.from_json(j.get("access_policy"))
 
 
-    def DeleteAccessPolicy(self, id: uuid.UUID):
-        return self._delete(f"{self.url}/tokenizer/policies/access/{str(id)}")
+    def DeleteAccessPolicy(self, id: uuid.UUID, version: int):
+        body = {
+            "version": version
+        }
+
+        return self._delete(f"{self.url}/tokenizer/policies/access/{str(id)}", data=ucjson.dumps(body))
 
 
     ### Token Operations
