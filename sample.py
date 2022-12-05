@@ -5,14 +5,16 @@ from client import Client, Error
 from models import AccessPolicy, GenerationPolicy
 from policies import AccessPolicyOpen, GenerationPolicyUUID
 
-client_id = "<REPLACE ME>"
-client_secret = "<REPLACE ME>"
-url = '<REPLACE ME>'
+client_id = "a8b14cad46751f474880dedca31b1499"
+client_secret = "w4PZF/ao/+qJfbpVm4wacDj9tGTa3xp3117q7fARA7J/Cq+wlisDRfR9E1yx0FqQ"
+url = 'http://jan5testdev.127.0.0.1.nip.io:3009'
+
 
 def test_access_policies(c: Client):
     # we embed the ID in a comment to ensure we are creating a unique AP each time
     id = uuid.uuid4()
-    new_ap = AccessPolicy(id, "test access policy", f"function policy(x, y) {{ return false /* {id} */}};", "{}")
+    new_ap = AccessPolicy(id, "test access policy",
+                          f"function policy(x, y) {{ return false /* {id} */}};", "{}")
 
     try:
         created_ap = c.CreateAccessPolicy(new_ap)
@@ -39,12 +41,15 @@ def test_access_policies(c: Client):
         if update.id != created_ap.id:
             print(f"update changed ID from {created_ap.id} to {update.id}")
         if update.version != created_ap.version + 1:
-            print(f"update changed version from {created_ap.version} to {update.version}, expected +1")
+            print(
+                f"update changed version from {created_ap.version} to {update.version}, expected +1")
     except Error as e:
         print("failed to update access policy: ", e)
 
     try:
         if not c.DeleteAccessPolicy(update.id, update.version):
+            print("failed to delete access policy but no error?")
+        if not c.DeleteAccessPolicy(update.id, update.version-1):
             print("failed to delete access policy but no error?")
     except Error as e:
         print("failed to delete access policy: ", e)
@@ -54,15 +59,17 @@ def test_access_policies(c: Client):
         for ap in aps:
             if ap.id == update.id:
                 if ap.version != 0:
-                    print(f"got access policy with version {ap.version}, expected 0")
+                    print(
+                        f"got access policy with version {ap.version}, expected 0")
     except Error as e:
         print("failed to get access policy: ", e)
 
 
 def test_generation_policies(c: Client):
-     # we embed the ID in a comment to ensure we are creating a unique AP each time
+    # we embed the ID in a comment to ensure we are creating a unique AP each time
     id = uuid.uuid4()
-    new_gp = GenerationPolicy(id, "test generation policy", f"function policy(x, y) {{ return 'token' /* {id} */}};", "{}")
+    new_gp = GenerationPolicy(id, "test generation policy",
+                              f"function policy(x, y) {{ return 'token' /* {id} */}};", "{}")
 
     try:
         created_gp = c.CreateGenerationPolicy(new_gp)
@@ -97,17 +104,19 @@ def test_token_apis(c: Client):
     data = c.ResolveToken(token, {})
     print(f"Data: {data}")
 
-    if(data != originalData):
+    if (data != originalData):
         print("something went wrong")
 
     lookup_token = None
     try:
-        lookup_tokens = c.LookupToken(originalData, GenerationPolicyUUID, AccessPolicyOpen)
+        lookup_tokens = c.LookupToken(
+            originalData, GenerationPolicyUUID, AccessPolicyOpen)
     except Error as e:
         print("failed to lookup token: ", e)
 
     if token not in lookup_tokens:
-        print(f"expected lookup tokens {lookup_token} to contain created token {token}")
+        print(
+            f"expected lookup tokens {lookup_token} to contain created token {token}")
 
     itr = None
     try:
@@ -116,11 +125,14 @@ def test_token_apis(c: Client):
         print("failed to inspect token: ", e)
 
     if itr.token != token:
-        print(f"expected inspect token {itr.token} to match created token {token}")
+        print(
+            f"expected inspect token {itr.token} to match created token {token}")
     if itr.generation_policy.id != GenerationPolicyUUID.id:
-        print(f"expected inspect generation policy {itr.generation_policy.id} to match created generation policy {GenerationPolicyUUID.id}")
+        print(
+            f"expected inspect generation policy {itr.generation_policy.id} to match created generation policy {GenerationPolicyUUID.id}")
     if itr.access_policy.id != AccessPolicyOpen.id:
-        print(f"expected inspect access policy {itr.access_policy.id} to match created access policy {AccessPolicyOpen.id}")
+        print(
+            f"expected inspect access policy {itr.access_policy.id} to match created access policy {AccessPolicyOpen.id}")
 
     try:
         if not c.DeleteToken(token):
